@@ -1,51 +1,75 @@
-import Card from 'react-bootstrap/Card';
-import CardGroup from 'react-bootstrap/CardGroup';
+import React, { useEffect, useState } from "react";
+import Card from "react-bootstrap/Card";
+import Button from "react-bootstrap/Button";
+import { db } from "../firebaseConfig";
+import { collection, getDocs } from "firebase/firestore";
+import Badge from "react-bootstrap/Badge";
+import { useNavigate } from "react-router-dom";  // นำเข้า useNavigate
 
 function GroupExample() {
+  const [cars, setCars] = useState([]);
+  const navigate = useNavigate(); // สร้าง instance ของ useNavigate
+
+  useEffect(() => {
+    const fetchCars = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "cars"));
+        const carList = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setCars(carList);
+      } catch (error) {
+        console.error("Error fetching cars: ", error);
+      }
+    };
+
+    fetchCars();
+  }, []);
+
+  const handleBookCar = (carId) => {
+    // เมื่อคลิกปุ่ม จองรถ จะนำทางไปยัง '/carform' พร้อมกับพารามิเตอร์ carId
+    navigate(`/carform/${carId}`);
+  };
+
   return (
-    <CardGroup>
-      <Card>
-        <Card.Img variant="top" src="holder.js/100px160" />
-        <Card.Body>
-          <Card.Title>Card title</Card.Title>
-          <Card.Text>
-            This is a wider card with supporting text below as a natural lead-in
-            to additional content. This content is a little bit longer.
-          </Card.Text>
-        </Card.Body>
-        <Card.Footer>
-          <small className="text-muted">Last updated 3 mins ago</small>
-        </Card.Footer>
-      </Card>
-      <Card>
-        <Card.Img variant="top" src="holder.js/100px160" />
-        <Card.Body>
-          <Card.Title>Card title</Card.Title>
-          <Card.Text>
-            This card has supporting text below as a natural lead-in to
-            additional content.
-          </Card.Text>
-        </Card.Body>
-        <Card.Footer>
-          <small className="text-muted">Last updated 3 mins ago</small>
-        </Card.Footer>
-      </Card>
-      <Card>
-        <Card.Img variant="top" src="holder.js/100px160" />
-        <Card.Body>
-          <Card.Title>Card title</Card.Title>
-          <Card.Text>
-            This is a wider card with supporting text below as a natural lead-in
-            to additional content. This card has even longer content than the
-            first to show that equal height action.
-          </Card.Text>
-        </Card.Body>
-        <Card.Footer>
-          <small className="text-muted">Last updated 3 mins ago</small>
-        </Card.Footer>
-      </Card>
-    </CardGroup>
-    
+    <div className="d-flex flex-wrap">
+      {cars.map((car) => (
+        <Card key={car.id} style={{ width: "18rem", margin: "1rem" }}>
+          <Card.Img
+            variant="top"
+            src={car.img_car || "https://via.placeholder.com/150"}
+            style={{ height: "200px", objectFit: "cover" }}
+          />
+          <Card.Body>
+            <Card.Title>{car.brand} {car.model}</Card.Title>
+            <Card.Text>
+              <strong>ทะเบียน:</strong> {car.license_plate} <br />
+              <strong>ราคา:</strong> {car.price_per_day} บาท/วัน
+            </Card.Text>
+            <Button 
+              variant="primary" 
+              onClick={() => handleBookCar(car.id)}  // คลิกปุ่มแล้วนำไปที่ /carform/${carId}
+              style={{ height: "50px" }} // กำหนดความสูงของปุ่มให้เท่ากัน
+            >
+              จองรถ
+            </Button>
+          </Card.Body>
+          <Card.Footer>
+            <small className="text-muted">
+              <strong>สถานะ:</strong> 
+              <Badge 
+                pill 
+                bg={car.status === "available" ? "success" : "secondary"} 
+                className="ms-2"
+              >
+                {car.status === "available" ? "Available" : "Not Available"}
+              </Badge>
+            </small>
+          </Card.Footer>
+        </Card>
+      ))}
+    </div>
   );
 }
 
