@@ -1,0 +1,15 @@
+.carousel-item {
+    height: 500px;
+    background-size: cover;
+    background-position: center;
+  }
+  .slide1 {
+    background-image: url("https://via.placeholder.com/1200x500?text=Slide+1");
+  }
+  .slide2 {
+    background-image: url("https://via.placeholder.com/1200x500?text=Slide+2");
+  }
+  .slide3 {
+    background-image: url("https://via.placeholder.com/1200x500?text=Slide+3");
+  }
+  
