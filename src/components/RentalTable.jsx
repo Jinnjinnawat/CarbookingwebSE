@@ -1,7 +1,6 @@
-// RentalTable.jsx
 import React, { useEffect, useState } from 'react';
-import { Table, Button } from 'react-bootstrap';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { Table, Button, Dropdown, DropdownButton } from 'react-bootstrap';
+import { collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';  // นำเข้า db จาก firebaseConfig
 import { useNavigate } from 'react-router-dom';  // Import useNavigate from react-router-dom
 
@@ -27,9 +26,16 @@ const RentalTable = () => {
     navigate('/addrental');
   };
 
-  const handleEdit = (rentalId) => {
-    // Navigate to the edit page for the selected rental
-    navigate(`/editrental/${rentalId}`);
+  const handleEditStatus = async (rentalId, newStatus) => {
+    try {
+      const rentalRef = doc(db, 'rentals', rentalId);
+      await updateDoc(rentalRef, {
+        status: newStatus
+      });
+      setRentals(rentals.map(rental => rental.id === rentalId ? { ...rental, status: newStatus } : rental));
+    } catch (error) {
+      console.error('Error updating rental status:', error);
+    }
   };
 
   const handleDelete = async (rentalId) => {
@@ -67,9 +73,11 @@ const RentalTable = () => {
               <td>{new Date(rental.end_date.seconds * 1000).toLocaleDateString()}</td> {/* Convert Firestore timestamp to Date */}
               <td>{rental.total_price}</td>
               <td>
-                <Button variant="warning" onClick={() => handleEdit(rental.id)} className="me-2">
-                  Edit
-                </Button>
+                <DropdownButton variant="warning" title="Edit Status">
+                  <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Available')}>Available</Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Rented')}>Rented</Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Maintenance')}>Maintenance</Dropdown.Item>
+                </DropdownButton>
               </td>
               <td>
                 <Button variant="danger" onClick={() => handleDelete(rental.id)}>

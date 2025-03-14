@@ -5,7 +5,7 @@ import Calendar from './Calendar';
 function AdminPage() {
   return (
     <div>
-      <h2>Admin Page</h2>
+      <center><h2>ปฎิทินการเช่ารถ</h2></center>
       <Calendar />
     </div>
   );

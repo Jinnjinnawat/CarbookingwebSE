@@ -37,10 +37,13 @@ const Sidebar = () => {
         <Offcanvas.Body>
           <Nav className="flex-column">
             <Nav.Link as={NavLink} to="/Tablecar" onClick={toggleSidebar}>
-              รถยนต์
+              ข้อมูลรถยนต์
             </Nav.Link>
             <Nav.Link as={NavLink} to="/TableRental" onClick={toggleSidebar}>
-              เช่ารถยนต์
+              ข้อมูลแอดมิน
+            </Nav.Link>
+            <Nav.Link as={NavLink} to="/TableRental" onClick={toggleSidebar}>
+              ข้อมูลเช่ารถยนต์
             </Nav.Link>
             <Nav.Link onClick={toggleSidebar}>
               Logout
