@@ -10,28 +10,30 @@ const RentalTable = () => {
 
   useEffect(() => {
     const fetchRentals = async () => {
-      const querySnapshot = await getDocs(collection(db, 'rentals'));  // Change 'cars' to 'rentals'
-      const rentalList = [];
-      querySnapshot.forEach((doc) => {
-        rentalList.push({ id: doc.id, ...doc.data() });
-      });
-      setRentals(rentalList);
+      try {
+        const querySnapshot = await getDocs(collection(db, 'bookings'));  // Change 'cars' to 'rentals'
+        const rentalList = [];
+        querySnapshot.forEach((doc) => {
+          rentalList.push({ id: doc.id, ...doc.data() });
+        });
+        setRentals(rentalList);
+        console.log("Fetched rentals:", rentalList);  // Log fetched data
+      } catch (error) {
+        console.error('Error fetching rentals:', error);
+      }
     };
 
     fetchRentals();
   }, []);
 
   const handleAdd = () => {
-    // Navigate to the /addrental page when the "เพิ่มข้อมูลการเช่ารถ" button is clicked
-    navigate('/addrental');
+    navigate('/addrental');  // Navigate to the /addrental page
   };
 
   const handleEditStatus = async (rentalId, newStatus) => {
     try {
-      const rentalRef = doc(db, 'rentals', rentalId);
-      await updateDoc(rentalRef, {
-        status: newStatus
-      });
+      const rentalRef = doc(db, 'bookings', rentalId);  // Change 'bookings' to 'rentals'
+      await updateDoc(rentalRef, { status: newStatus });
       setRentals(rentals.map(rental => rental.id === rentalId ? { ...rental, status: newStatus } : rental));
     } catch (error) {
       console.error('Error updating rental status:', error);
@@ -40,7 +42,7 @@ const RentalTable = () => {
 
   const handleDelete = async (rentalId) => {
     try {
-      await deleteDoc(doc(db, 'rentals', rentalId));  // Change to 'rentals' collection
+      await deleteDoc(doc(db, 'bookings', rentalId));  // Change 'bookings' to 'rentals'
       setRentals(rentals.filter(rental => rental.id !== rentalId));  // Remove the deleted rental from the state
     } catch (error) {
       console.error('Error deleting rental:', error);
@@ -53,41 +55,56 @@ const RentalTable = () => {
       <Table striped bordered hover>
         <thead>
           <tr>
-            <th>Car ID</th>
-            <th>Customer ID</th>
-            <th>Status</th>
-            <th>Start Date</th>
-            <th>End Date</th>
+            <th>รุ่นรถ</th>
+            <th>ทะเบียน</th>
+            <th>ชื่อ</th>
+            <th>นามสกุล</th>
+            <th>วันที่เริ่มจอง</th>
+            <th>เวลาเริ่มจอง</th>
+            <th>วันสุดท้ายการจอง</th>
+            <th>เวลาสุดท้ายการจอง</th>
+            <th>สถานะการจอง</th>
             <th>Total Price</th>
-            <th>แก้ไขข้อมูล</th>
-            <th>ลบข้อมูล</th>
+            <th>ยกเลิกการเช่า</th>
+            
           </tr>
         </thead>
         <tbody>
-          {rentals.map((rental) => (
-            <tr key={rental.id}>
-              <td>{rental.car_id}</td>
-              <td>{rental.customer_id}</td>
-              <td>{rental.status}</td>
-              <td>{new Date(rental.start_date.seconds * 1000).toLocaleDateString()}</td> {/* Convert Firestore timestamp to Date */}
-              <td>{new Date(rental.end_date.seconds * 1000).toLocaleDateString()}</td> {/* Convert Firestore timestamp to Date */}
-              <td>{rental.total_price}</td>
-              <td>
-                <DropdownButton variant="warning" title="Edit Status">
-                  <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Available')}>Available</Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Rented')}>Rented</Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Maintenance')}>Maintenance</Dropdown.Item>
-                </DropdownButton>
-              </td>
-              <td>
-                <Button variant="danger" onClick={() => handleDelete(rental.id)}>
-                  Delete
-                </Button>
-              </td>
+          {rentals.length > 0 ? (
+            rentals.map((rental) => (
+              <tr key={rental.id}>
+                <td>{rental.carModel}</td>
+                <td>{rental.licensePlate}</td>
+                <td>{rental.name}</td>
+                <td>{rental.surname}</td>
+                <td>{rental.startDate}</td>
+                <td>{rental.startTime}</td>
+                <td>{rental.endDate}</td>
+                <td>{rental.endTime}</td>
+                <td>
+                  <DropdownButton variant="warning" title={rental.status}>
+                    <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Available')}>Available</Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Rented')}>Rented</Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Maintenance')}>Maintenance</Dropdown.Item>
+                  </DropdownButton>
+                </td>
+                <td>{rental.totalCost}</td>
+               
+                <td>
+                  <Button variant="danger" onClick={() => handleDelete(rental.id)}>
+                    Delete
+                  </Button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="10" className="text-center">No rentals found</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </Table>
+     
     </div>
   );
 };

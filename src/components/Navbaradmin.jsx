@@ -36,6 +36,9 @@ const Sidebar = () => {
         </Offcanvas.Header>
         <Offcanvas.Body>
           <Nav className="flex-column">
+          <Nav.Link as={NavLink} to="/admin" onClick={toggleSidebar}>
+            หน้าหลัก
+            </Nav.Link>
             <Nav.Link as={NavLink} to="/Tablecar" onClick={toggleSidebar}>
               ข้อมูลรถยนต์
             </Nav.Link>

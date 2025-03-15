@@ -32,7 +32,7 @@ function ColorSchemesExample({ user, setUser }) {
           {user && (
             <>
               <Nav.Link as={NavLink} to="/history">ประวัติการเช่ารถ</Nav.Link>
-              <Nav.Link as={NavLink} to="/rent">เช่ารถ</Nav.Link>
+              <Nav.Link as={NavLink} to="/home">เช่ารถ</Nav.Link>
             </>
           )}
         </Nav>

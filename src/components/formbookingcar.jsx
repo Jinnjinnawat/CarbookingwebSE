@@ -1,101 +1,126 @@
 import React, { useState, useEffect } from "react";
 import { Form, Button, Container, Row, Col, Card } from "react-bootstrap";
+import { useLocation } from "react-router-dom";
+import { db } from "../firebaseConfig";
+import { collection, addDoc } from "firebase/firestore";
 
 const CarRentalForm = () => {
-  const [rentalDate, setRentalDate] = useState("");
-  const [rentalTime, setRentalTime] = useState("");
-  const [returnDate, setReturnDate] = useState("");
-  const [returnTime, setReturnTime] = useState("");
-  const [totalDuration, setTotalDuration] = useState("");
+  const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [totalCost, setTotalCost] = useState(0);
+  const [pricePerDay, setPricePerDay] = useState(0);
+
+  const location = useLocation();
+  const { 
+    startDate, startTime, endDate, endTime, 
+    licensePlate, carModel, pricePerDay: carPricePerDay 
+  } = location.state || {};
 
   useEffect(() => {
-    if (rentalDate && rentalTime && returnDate && returnTime) {
-      const start = new Date(`${rentalDate}T${rentalTime}`);
-      const end = new Date(`${returnDate}T${returnTime}`);
-      const diff = end - start;
-      if (diff > 0) {
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        setTotalDuration(`${days} วัน ${hours} ชั่วโมง`);
-      } else {
-        setTotalDuration("ข้อมูลวันที่หรือเวลาไม่ถูกต้อง");
-      }
-    } else {
-      setTotalDuration("");
-    }
-  }, [rentalDate, rentalTime, returnDate, returnTime]);
+    if (carPricePerDay) setPricePerDay(carPricePerDay);
+  }, [carPricePerDay]);
 
-  const handleTimeChange = (setter) => (e) => {
-    const time = e.target.value;
-    const [hours, minutes] = time.split(":").map(Number);
-    if (minutes % 30 !== 0) {
-      alert("กรุณาเลือกเวลาที่เป็นช่วงครึ่งชั่วโมง เช่น 09:00 หรือ 09:30");
-    } else {
-      setter(time);
+  const handleCalculateCost = () => {
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffTime = end - start;
+      const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const cost = totalDays * pricePerDay;
+      setTotalCost(cost);
+    }
+  };
+
+  useEffect(() => {
+    handleCalculateCost();
+  }, [startDate, endDate, pricePerDay]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!name || !surname || !phone || !email) {
+      alert("Please complete all required fields.");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "bookings"), {
+        name,
+        surname,
+        phone,
+        email,
+        startDate,
+        startTime,
+        endDate,
+        endTime,
+        licensePlate,
+        carModel,
+        totalCost,
+        pricePerDay,
+        status: "Pending Approval", // Add status as "Pending Approval"
+        createdAt: new Date(),
+      });
+      alert("Booking submitted successfully!");
+      
+      // Reset the form after successful submission
+      setName("");
+      setSurname("");
+      setPhone("");
+      setEmail("");
+    } catch (error) {
+      console.error("Error saving data: ", error);
+      alert("An error occurred while saving the data. Please try again.");
     }
   };
 
   return (
-    <Container className="mt-5">
-      <Row className="justify-content-center">
-        <Col md={6}>
-          <Card className="shadow-lg p-4">
-            <Card.Title className="text-center mb-4">แบบฟอร์มเช่ารถ</Card.Title>
-            <Form>
-              <Form.Group className="mb-3" controlId="name">
-                <Form.Label>ชื่อ-นามสกุล</Form.Label>
-                <Form.Control type="text" placeholder="กรอกชื่อของคุณ" required />
-              </Form.Group>
-              
-              <Form.Group className="mb-3" controlId="phone">
-                <Form.Label>เบอร์โทร</Form.Label>
-                <Form.Control type="tel" placeholder="กรอกเบอร์โทร" required />
-              </Form.Group>
-              
-              <Form.Group className="mb-3" controlId="email">
-                <Form.Label>อีเมล</Form.Label>
-                <Form.Control type="email" placeholder="กรอกอีเมล" required />
-              </Form.Group>
-              
-              <Form.Group className="mb-3" controlId="carType">
-                <Form.Label>เลือกรถที่ต้องการเช่า</Form.Label>
-                <Form.Select>
-                  <option>-- กรุณาเลือก --</option>
-                  <option>Honda City</option>
-                  <option>Toyota Altis</option>
-                  <option>Ford Ranger</option>
-                </Form.Select>
-              </Form.Group>
-              
-              <Form.Group className="mb-3" controlId="rentalDate">
-                <Form.Label>วันที่เริ่มเช่า</Form.Label>
-                <Form.Control type="date" value={rentalDate} onChange={(e) => setRentalDate(e.target.value)} required />
-              </Form.Group>
-              
-              <Form.Group className="mb-3" controlId="rentalTime">
-                <Form.Label>เวลาที่ต้องการเช่า</Form.Label>
-                <Form.Control type="time" value={rentalTime} onChange={handleTimeChange(setRentalTime)} required />
-              </Form.Group>
-              
-              <Form.Group className="mb-3" controlId="returnDate">
-                <Form.Label>วันที่คืนรถ</Form.Label>
-                <Form.Control type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} required />
-              </Form.Group>
-              
-              <Form.Group className="mb-3" controlId="returnTime">
-                <Form.Label>เวลาที่คืนรถ</Form.Label>
-                <Form.Control type="time" value={returnTime} onChange={handleTimeChange(setReturnTime)} required />
-              </Form.Group>
-              
-              <Form.Group className="mb-3">
-                <Form.Label>ระยะเวลาการเช่า</Form.Label>
-                <Form.Control type="text" value={totalDuration} readOnly />
-              </Form.Group>
-              
-              <Button variant="primary" type="submit" className="w-100">
-                ส่งข้อมูล
-              </Button>
-            </Form>
+    <Container>
+      <Row>
+        <Col>
+          <Card className="mt-5 p-4 shadow-sm">
+            <Card.Body>
+              <h4>Car Rental Booking</h4>
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label>First Name</Form.Label>
+                  <Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Last Name</Form.Label>
+                  <Form.Control type="text" value={surname} onChange={(e) => setSurname(e.target.value)} />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Phone Number</Form.Label>
+                  <Form.Control type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>License Plate</Form.Label>
+                  <Form.Control type="text" value={licensePlate || "No Data"} readOnly />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Car Model</Form.Label>
+                  <Form.Control type="text" value={carModel || "No Data"} readOnly />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Total Cost</Form.Label>
+                  <Form.Control type="text" value={totalCost ? `${totalCost} THB` : "No Data"} readOnly />
+                </Form.Group>
+
+                <Button variant="primary" type="submit" className="w-100">Submit</Button>
+              </Form>
+            </Card.Body>
           </Card>
         </Col>
       </Row>
