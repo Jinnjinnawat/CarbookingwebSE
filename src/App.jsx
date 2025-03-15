@@ -10,11 +10,14 @@ import Register from "./components/Reg";
 import AdminPage from "./components/admin";
 import Putcar from "./components/putcar";
 import CarRentalForm from "./components/formbookingcar";
-import AddCarForm from "./components/Addcar";
+import AddCarForm from "./components/addcar";
 import Sidebar from "./components/Navbaradmin";
 import VehicleTable from "./components/VehicleTable";
 import EditCarForm from "./components/EditCarForm";
 import RentalTable from "./components/RentalTable";
+import AddAdminForm from "./components/addAdminForm";
+import EditAdminForm from "./components/EditAdminForm";
+import AdminTable from "./components/AdminTable";
 
 function AppContent({ user, setUser }) {
   const location = useLocation();
@@ -26,16 +29,17 @@ function AppContent({ user, setUser }) {
     }
   }, [setUser]);
 
-  const hideNavbarPages = ["/admin", "/incar", "/Tablecar", "/addcar","/TableRental"];
-  const hideFooterPages = ["/Login", "/incar", "/admin", "/Tablecar", "/addcar","/TableRental"];
+  const hideNavbarPages = ["/admin", "/incar", "/Tablecar", "/addcar","/TableRental","/editadmin","/TableAdmin","/addadmin"];
+  const hideFooterPages = ["/Login", "/incar", "/admin", "/Tablecar", "/addcar","/TableRental","/editadmin","/TableAdmin","/addadmin"];
 
   // Use useMatch instead of matchPath
-  const isEditCarPage = useMatch("/editcar/:carId");
-  const isAdminPage = ["/admin", "/Tablecar", "/addcar","/TableRental"].includes(location.pathname);
+  const isEditAdminPage = useMatch("/editadmin/:adminId");
+  const isEditCarPage = useMatch("/editcar/:carId","/editadmin/:adminId");
+  const isAdminPage = ["/admin", "/Tablecar", "/addcar","/TableRental","/editadmin","/addadmin","/TableAdmin"].includes(location.pathname);
 
-  const shouldShowNavbar = !(hideNavbarPages.includes(location.pathname) || isEditCarPage);
-  const shouldShowSidebar = isAdminPage || isEditCarPage;
-  const shouldShowFooter = !(hideFooterPages.includes(location.pathname) || isEditCarPage);
+  const shouldShowNavbar = !(hideNavbarPages.includes(location.pathname) || isEditCarPage || isEditAdminPage);
+  const shouldShowSidebar = isAdminPage || isEditCarPage || isEditAdminPage;
+  const shouldShowFooter = !(hideFooterPages.includes(location.pathname) || isEditCarPage || isEditAdminPage);
 
   return (
     <div style={{ display: "flex" }}>
@@ -54,6 +58,9 @@ function AppContent({ user, setUser }) {
           <Route path="/Tablecar" element={<VehicleTable />} />
           <Route path="/editcar/:carId" element={<EditCarForm />} />
           <Route path="/TableRental" element={<RentalTable />} />
+          <Route path="/editadmin/:adminId" element={<EditAdminForm />} />
+          <Route path="/TableAdmin" element={<AdminTable />} />
+          <Route path="/addadmin" element={<AddAdminForm />} />
         </Routes>
         {shouldShowFooter && <Footer />}
       </div>

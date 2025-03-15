@@ -39,7 +39,7 @@ const Sidebar = () => {
             <Nav.Link as={NavLink} to="/Tablecar" onClick={toggleSidebar}>
               ข้อมูลรถยนต์
             </Nav.Link>
-            <Nav.Link as={NavLink} to="/TableRental" onClick={toggleSidebar}>
+            <Nav.Link as={NavLink} to="/TableAdmin" onClick={toggleSidebar}>
               ข้อมูลแอดมิน
             </Nav.Link>
             <Nav.Link as={NavLink} to="/TableRental" onClick={toggleSidebar}>
