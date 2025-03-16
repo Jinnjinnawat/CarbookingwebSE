@@ -88,9 +88,8 @@ const RentalTable = () => {
                 <td>{rental.endTime}</td>
                 <td>
                   <DropdownButton variant="warning" title={rental.status}>
-                    <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Available')}>Available</Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Rented')}>Rented</Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Maintenance')}>Maintenance</Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'approve')}>approve</Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Not approved')}>Not approved</Dropdown.Item>
                   </DropdownButton>
                 </td>
                 <td>{rental.totalCost}</td>

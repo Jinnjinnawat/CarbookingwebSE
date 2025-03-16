@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Form, Button, Container, Row, Col, Card } from "react-bootstrap";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { db } from "../firebaseConfig";
 import { collection, addDoc } from "firebase/firestore";
 
@@ -13,8 +13,10 @@ const CarRentalForm = () => {
   const [pricePerDay, setPricePerDay] = useState(0);
 
   const location = useLocation();
+  const navigate = useNavigate();
+
   const { 
-    startDate, startTime, endDate, endTime, 
+    carId, startDate, startTime, endDate, endTime, 
     licensePlate, carModel, pricePerDay: carPricePerDay 
   } = location.state || {};
 
@@ -41,12 +43,13 @@ const CarRentalForm = () => {
     e.preventDefault();
     
     if (!name || !surname || !phone || !email) {
-      alert("Please complete all required fields.");
+      alert("กรุณากรอกข้อมูลให้ครบถ้วน");
       return;
     }
 
     try {
       await addDoc(collection(db, "bookings"), {
+        carId, 
         name,
         surname,
         phone,
@@ -56,22 +59,27 @@ const CarRentalForm = () => {
         endDate,
         endTime,
         licensePlate,
-        carModel ,
+        carModel,
         totalCost,
         pricePerDay,
-        status: "Pending Approval", // Add status as "Pending Approval"
+        status: "Pending Approval", 
         createdAt: new Date(),
       });
-      alert("Booking submitted successfully!");
-      
-      // Reset the form after successful submission
+
+      alert("จองรถเรียบร้อยแล้ว!");
+
+      // Reset form
       setName("");
       setSurname("");
       setPhone("");
       setEmail("");
+
+      // นำทางไปหน้ารายการจองหลังจากสำเร็จ
+      navigate(`/bookings/${carId}`);
+
     } catch (error) {
       console.error("Error saving data: ", error);
-      alert("An error occurred while saving the data. Please try again.");
+      alert("เกิดข้อผิดพลาดขณะบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง");
     }
   };
 
