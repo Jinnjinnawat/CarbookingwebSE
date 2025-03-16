@@ -19,6 +19,8 @@ import AddAdminForm from "./components/addAdminForm";
 import EditAdminForm from "./components/EditAdminForm";
 import AdminTable from "./components/AdminTable";
 import HistorybookingTable from "./components/historybooking";
+import PaymentForm from "./components/PaymentPage";
+import MapPage from "./components/LocationPage";
 
 function AppContent({ user, setUser }) {
   const location = useLocation();
@@ -63,6 +65,8 @@ function AppContent({ user, setUser }) {
           <Route path="/TableAdmin" element={<AdminTable />} />
           <Route path="/addadmin" element={<AddAdminForm />} />
           <Route path="/history" element={<HistorybookingTable />} />
+          <Route path="/PaymentForm/:rentalId" element={<PaymentForm />} />
+          <Route path="/MapPage" element={<MapPage />} />
         </Routes>
         {shouldShowFooter && <Footer />}
       </div>

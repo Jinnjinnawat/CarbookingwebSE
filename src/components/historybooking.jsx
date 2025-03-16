@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Dropdown, DropdownButton } from 'react-bootstrap';
-import { collection, getDocs, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { Table, Button } from 'react-bootstrap';
+import { collection, getDocs, deleteDoc, doc, query, where } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,43 +8,43 @@ const HistorybookingTable = () => {
   const [rentals, setRentals] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchRentals = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'bookings'));
-        const rentalList = [];
-        querySnapshot.forEach((doc) => {
-          rentalList.push({ id: doc.id, ...doc.data() });
-        });
-        setRentals(rentalList);
-        console.log("Fetched rentals:", rentalList);
-      } catch (error) {
-        console.error('Error fetching rentals:', error);
-      }
-    };
-
-    fetchRentals();
-  }, []);
-
-  const handleAdd = () => {
-    navigate('/addrental');
-  };
-
-  const handleEditStatus = async (rentalId, newStatus) => {
+  const fetchRentals = async () => {
     try {
-      const rentalRef = doc(db, 'bookings', rentalId);
-      await updateDoc(rentalRef, { status: newStatus });
+      const customerSnapshot = await getDocs(collection(db, 'customers'));
+      const rentalList = [];
 
-      // Update car status as well
-      const rentalData = await getDoc(rentalRef);
-      const carRef = doc(db, 'cars', rentalData.data().carId);
-      await updateDoc(carRef, { status: newStatus });
+      for (const customerDoc of customerSnapshot.docs) {
+        const customerEmail = customerDoc.data().email;
+        const bookingsQuery = query(collection(db, 'bookings'), where('email', '==', customerEmail));
+        const bookingsSnapshot = await getDocs(bookingsQuery);
 
-      setRentals(rentals.map(rental => rental.id === rentalId ? { ...rental, status: newStatus } : rental));
+        for (const bookingDoc of bookingsSnapshot.docs) {
+          const bookingData = bookingDoc.data();
+          const rentalId = bookingDoc.id;
+
+          // Fetch payment data for each booking
+          const paymentQuery = query(collection(db, 'paymentData'), where('rentalId', '==', rentalId));
+          const paymentSnapshot = await getDocs(paymentQuery);
+          let paymentStatus = null;
+
+          paymentSnapshot.forEach((doc) => {
+            paymentStatus = doc.data().paymentStatus; // Assuming the field is 'paymentStatus'
+          });
+
+          rentalList.push({ id: rentalId, ...bookingData, paymentStatus });
+        }
+      }
+
+      setRentals(rentalList);
+      console.log('Fetched rentals:', rentalList);
     } catch (error) {
-      console.error('Error updating rental status:', error);
+      console.error('Error fetching rentals:', error);
     }
   };
+
+  useEffect(() => {
+    fetchRentals();
+  }, []);
 
   const handleDelete = async (rentalId) => {
     try {
@@ -53,6 +53,10 @@ const HistorybookingTable = () => {
     } catch (error) {
       console.error('Error deleting rental:', error);
     }
+  };
+
+  const handlePayment = (rentalId) => {
+    navigate(`/PaymentForm/${rentalId}`);
   };
 
   return (
@@ -71,7 +75,7 @@ const HistorybookingTable = () => {
             <th>เวลาสุดท้ายการจอง</th>
             <th>สถานะการจอง</th>
             <th>Total Price</th>
-            <th>ยกเลิกการเช่า</th>
+            <th>การกระทำ</th>
           </tr>
         </thead>
         <tbody>
@@ -86,15 +90,42 @@ const HistorybookingTable = () => {
                 <td>{rental.startTime}</td>
                 <td>{rental.endDate}</td>
                 <td>{rental.endTime}</td>
-                <td>
-                  <DropdownButton variant="warning" title={rental.status}>
-                    <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'approve')}>approve</Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleEditStatus(rental.id, 'Not approved')}>Not approved</Dropdown.Item>
-                  </DropdownButton>
-                </td>
+                <td>{rental.status}</td>
                 <td>{rental.totalCost}</td>
                 <td>
-                  <Button variant="danger" onClick={() => handleDelete(rental.id)}>ยกเลิก</Button>
+                  {rental.paymentStatus === 'Paid' ? (
+                    <>
+                      <span>ชำระเงินแล้ว</span>
+                      <Button 
+                        variant="info" 
+                        onClick={() => navigate('/MapPage')} 
+                        className="ms-2"
+                      >
+                        ดูแผนที่
+                      </Button>
+                    </>
+                  ) : rental.paymentStatus === 'NotPaid' ? (
+                    <>
+                      <span>ยังไม่ได้ชำระเงิน</span>
+                      <Button 
+                        variant="success" 
+                        onClick={() => handlePayment(rental.id)}
+                        className="mb-2"
+                      >
+                        ชำระเงิน
+                      </Button>
+                    </>
+                  ) : rental.status === 'approve' ? (
+                    <Button 
+                      variant="success" 
+                      onClick={() => handlePayment(rental.id)}
+                      className="mb-2"
+                    >
+                      ชำระเงิน
+                    </Button>
+                  ) : (
+                    <Button variant="danger" onClick={() => handleDelete(rental.id)}>ยกเลิก</Button>
+                  )}
                 </td>
               </tr>
             ))

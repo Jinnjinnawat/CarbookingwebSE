@@ -27,7 +27,7 @@ function ColorSchemesExample({ user, setUser }) {
       <Container>
         <Navbar.Brand as={NavLink} to="/">CarBooking</Navbar.Brand>
         <Nav className="me-auto">
-          <Nav.Link as={NavLink} to="/home">Home</Nav.Link>
+          <Nav.Link as={NavLink} to="/">Home</Nav.Link>
           {!user && <Nav.Link as={NavLink} to="/Reg">Register</Nav.Link>} {/* แสดงเฉพาะยังไม่ได้ล็อกอิน */}
           {user && (
             <>
