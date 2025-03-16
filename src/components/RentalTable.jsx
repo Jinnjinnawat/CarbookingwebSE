@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Dropdown, DropdownButton } from 'react-bootstrap';
-import { collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebaseConfig';  // นำเข้า db จาก firebaseConfig
-import { useNavigate } from 'react-router-dom';  // Import useNavigate from react-router-dom
+import { collection, getDocs, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
+import { useNavigate } from 'react-router-dom';
 
 const RentalTable = () => {
   const [rentals, setRentals] = useState([]);
-  const navigate = useNavigate();  // Hook to handle navigation
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRentals = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'bookings'));  // Change 'cars' to 'rentals'
+        const querySnapshot = await getDocs(collection(db, 'bookings'));
         const rentalList = [];
         querySnapshot.forEach((doc) => {
           rentalList.push({ id: doc.id, ...doc.data() });
         });
         setRentals(rentalList);
-        console.log("Fetched rentals:", rentalList);  // Log fetched data
+        console.log("Fetched rentals:", rentalList);
       } catch (error) {
         console.error('Error fetching rentals:', error);
       }
@@ -27,13 +27,19 @@ const RentalTable = () => {
   }, []);
 
   const handleAdd = () => {
-    navigate('/addrental');  // Navigate to the /addrental page
+    navigate('/addrental');
   };
 
   const handleEditStatus = async (rentalId, newStatus) => {
     try {
-      const rentalRef = doc(db, 'bookings', rentalId);  // Change 'bookings' to 'rentals'
+      const rentalRef = doc(db, 'bookings', rentalId);
       await updateDoc(rentalRef, { status: newStatus });
+
+      // Update car status as well
+      const rentalData = await getDoc(rentalRef);
+      const carRef = doc(db, 'cars', rentalData.data().carId);
+      await updateDoc(carRef, { status: newStatus });
+
       setRentals(rentals.map(rental => rental.id === rentalId ? { ...rental, status: newStatus } : rental));
     } catch (error) {
       console.error('Error updating rental status:', error);
@@ -42,8 +48,8 @@ const RentalTable = () => {
 
   const handleDelete = async (rentalId) => {
     try {
-      await deleteDoc(doc(db, 'bookings', rentalId));  // Change 'bookings' to 'rentals'
-      setRentals(rentals.filter(rental => rental.id !== rentalId));  // Remove the deleted rental from the state
+      await deleteDoc(doc(db, 'bookings', rentalId));
+      setRentals(rentals.filter(rental => rental.id !== rentalId));
     } catch (error) {
       console.error('Error deleting rental:', error);
     }
@@ -66,7 +72,6 @@ const RentalTable = () => {
             <th>สถานะการจอง</th>
             <th>Total Price</th>
             <th>ยกเลิกการเช่า</th>
-            
           </tr>
         </thead>
         <tbody>
@@ -89,22 +94,19 @@ const RentalTable = () => {
                   </DropdownButton>
                 </td>
                 <td>{rental.totalCost}</td>
-               
                 <td>
-                  <Button variant="danger" onClick={() => handleDelete(rental.id)}>
-                    Delete
-                  </Button>
+                  <Button variant="danger" onClick={() => handleDelete(rental.id)}>ยกเลิก</Button>
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="10" className="text-center">No rentals found</td>
+              <td colSpan="11" className="text-center">ไม่พบข้อมูลการเช่า</td>
             </tr>
           )}
         </tbody>
       </Table>
-     
+      <Button variant="primary" onClick={handleAdd}>เพิ่มการจอง</Button>
     </div>
   );
 };

@@ -56,7 +56,7 @@ const CarRentalForm = () => {
         endDate,
         endTime,
         licensePlate,
-        carModel,
+        carModel ,
         totalCost,
         pricePerDay,
         status: "Pending Approval", // Add status as "Pending Approval"
