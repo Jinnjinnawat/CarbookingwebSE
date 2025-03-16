@@ -18,6 +18,7 @@ import RentalTable from "./components/RentalTable";
 import AddAdminForm from "./components/addAdminForm";
 import EditAdminForm from "./components/EditAdminForm";
 import AdminTable from "./components/AdminTable";
+import HistorybookingTable from "./components/historybooking";
 
 function AppContent({ user, setUser }) {
   const location = useLocation();
@@ -61,6 +62,7 @@ function AppContent({ user, setUser }) {
           <Route path="/editadmin/:adminId" element={<EditAdminForm />} />
           <Route path="/TableAdmin" element={<AdminTable />} />
           <Route path="/addadmin" element={<AddAdminForm />} />
+          <Route path="/history" element={<HistorybookingTable />} />
         </Routes>
         {shouldShowFooter && <Footer />}
       </div>

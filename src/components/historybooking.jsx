@@ -4,7 +4,7 @@ import { collection, getDocs, deleteDoc, doc, updateDoc, getDoc } from 'firebase
 import { db } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 
-const RentalTable = () => {
+const HistorybookingTable = () => {
   const [rentals, setRentals] = useState([]);
   const navigate = useNavigate();
 
@@ -105,9 +105,8 @@ const RentalTable = () => {
           )}
         </tbody>
       </Table>
-    
     </div>
   );
 };
 
-export default RentalTable;
+export default HistorybookingTable;
