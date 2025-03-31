@@ -37,9 +37,9 @@ function GroupExample() {
 
         if (booking) {
           if (booking.status === "approve") {
-            carStatus = "Booked"; // 🚫 ถูกจองแล้ว
+            carStatus = "Booked";
           } else if (booking.status === "Pending Approval") {
-            carStatus = "Pending"; // 🟡 รอดำเนินการ
+            carStatus = "Pending";
           }
         }
 
@@ -57,6 +57,43 @@ function GroupExample() {
     setLoading(false);
   };
 
+  const handleStartDateChange = (e) => {
+    const today = new Date().toISOString().split("T")[0];
+    const selectedDate = e.target.value;
+    if (selectedDate < today) {
+      alert("ไม่สามารถเลือกวันที่ก่อนวันปัจจุบันได้");
+      return;
+    }
+    setStartDate(selectedDate);
+    if (endDate && selectedDate > endDate) {
+      setEndDate(selectedDate);
+    }
+  };
+
+  const handleStartTimeChange = (e) => {
+    setStartTime(e.target.value);
+    if (startDate === endDate && endTime && e.target.value > endTime) {
+      setEndTime(e.target.value);
+    }
+  };
+
+  const handleEndDateChange = (e) => {
+    const selectedDate = e.target.value;
+    if (selectedDate < startDate) {
+      alert("วันที่คืนรถต้องไม่เร็วกว่าวันที่เริ่มเช่า");
+      return;
+    }
+    setEndDate(selectedDate);
+  };
+
+  const handleEndTimeChange = (e) => {
+    if (startDate === endDate && e.target.value < startTime) {
+      alert("เวลาคืนรถต้องไม่เร็วกว่าเวลาเริ่มเช่า");
+      return;
+    }
+    setEndTime(e.target.value);
+  };
+
   const handleBookCar = (carId, carModel, licensePlate, pricePerDay) => {
     navigate(`/carform/${carId}`, {
       state: { startDate, startTime, endDate, endTime, carModel, licensePlate, pricePerDay, carId },
@@ -70,21 +107,21 @@ function GroupExample() {
         <Row className="mb-4">
           <Col md={6}>
             <Form.Label>วันที่เริ่มเช่า</Form.Label>
-            <Form.Control type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <Form.Control type="date" value={startDate} onChange={handleStartDateChange} />
           </Col>
           <Col md={6}>
             <Form.Label>เวลาเริ่มเช่า</Form.Label>
-            <Form.Control type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+            <Form.Control type="time" value={startTime} onChange={handleStartTimeChange} />
           </Col>
         </Row>
         <Row className="mb-4">
           <Col md={6}>
             <Form.Label>วันที่คืนรถ</Form.Label>
-            <Form.Control type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            <Form.Control type="date" value={endDate} onChange={handleEndDateChange} />
           </Col>
           <Col md={6}>
             <Form.Label>เวลาคืนรถ</Form.Label>
-            <Form.Control type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+            <Form.Control type="time" value={endTime} onChange={handleEndTimeChange} />
           </Col>
         </Row>
       </Form>
@@ -109,17 +146,15 @@ function GroupExample() {
                       variant="primary" 
                       onClick={() => handleBookCar(car.id, car.model, car.license_plate, car.price_per_day)}
                       className="w-100"
-                      disabled={car.status === "Booked" || car.status === "Pending"} // 🚫 ปิดการจองถ้า "Booked" หรือ "Pending"
+                      disabled={car.status === "Booked" || car.status === "Pending"}
                     >
-                      {car.status === "Booked" ? "รถถูกจองแล้ว" : car.status === "Pending" ? "รอดำเนินการ" : "จองรถ"}
+                      {car.status === "Booked" ? "รถถูกจองแล้ว" : car.status === "Pending" ? "รอดำเนินการ" : "เช่ารถ"}
                     </Button>
                   </Card.Body>
                   <Card.Footer>
                     <small className="text-muted">
                       <strong>สถานะ:</strong>
-                      <Badge pill bg={car.status === "Available" ? "success" :
-                        car.status === "Booked" ? "danger" :
-                        car.status === "Pending" ? "warning" : "info"} className="ms-2">
+                      <Badge pill bg={car.status === "Available" ? "success" : car.status === "Booked" ? "danger" : "warning"} className="ms-2">
                         {car.status === "Booked" ? "ถูกจองแล้ว" : car.status === "Pending" ? "รอดำเนินการ" : "ว่าง"}
                       </Badge>
                     </small>
