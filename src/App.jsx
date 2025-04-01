@@ -21,7 +21,9 @@ import AdminTable from "./components/AdminTable";
 import HistorybookingTable from "./components/historybooking";
 import PaymentForm from "./components/PaymentPage";
 import MapPage from "./components/LocationPage";
-
+import Profile from "./components/profile";
+import EditProfile from "./components/EditProfile";
+import RevenueTable from "./components/revenueTable";
 function AppContent({ user, setUser }) {
   const location = useLocation();
 
@@ -32,13 +34,13 @@ function AppContent({ user, setUser }) {
     }
   }, [setUser]);
 
-  const hideNavbarPages = ["/admin", "/incar", "/Tablecar", "/addcar","/TableRental","/editadmin","/TableAdmin","/addadmin"];
-  const hideFooterPages = ["/Login", "/incar", "/admin", "/Tablecar", "/addcar","/TableRental","/editadmin","/TableAdmin","/addadmin"];
+  const hideNavbarPages = ["/admin", "/incar", "/Tablecar", "/addcar","/TableRental","/editadmin","/TableAdmin","/addadmin","/revenueTable"];
+  const hideFooterPages = ["/Login", "/incar", "/admin", "/Tablecar", "/addcar","/TableRental","/editadmin","/TableAdmin","/addadmin","/revenueTable"];
 
   // Use useMatch instead of matchPath
   const isEditAdminPage = useMatch("/editadmin/:adminId");
   const isEditCarPage = useMatch("/editcar/:carId","/editadmin/:adminId");
-  const isAdminPage = ["/admin", "/Tablecar", "/addcar","/TableRental","/editadmin","/addadmin","/TableAdmin"].includes(location.pathname);
+  const isAdminPage = ["/admin", "/Tablecar", "/addcar","/TableRental","/editadmin","/addadmin","/TableAdmin","/revenueTable"].includes(location.pathname);
 
   const shouldShowNavbar = !(hideNavbarPages.includes(location.pathname) || isEditCarPage || isEditAdminPage);
   const shouldShowSidebar = isAdminPage || isEditCarPage || isEditAdminPage;
@@ -67,6 +69,9 @@ function AppContent({ user, setUser }) {
           <Route path="/history" element={<HistorybookingTable />} />
           <Route path="/PaymentForm/:rentalId" element={<PaymentForm />} />
           <Route path="/MapPage" element={<MapPage />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/revenueTable" element={<RevenueTable />} />
         </Routes>
         {shouldShowFooter && <Footer />}
       </div>

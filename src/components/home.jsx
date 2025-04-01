@@ -27,20 +27,40 @@ function GroupExample() {
 
       const bookedCars = bookingsSnapshot.docs.map((doc) => {
         const data = doc.data();
-        return { carId: data.carId, status: data.status };
+        return {
+          carId: data.carId,
+          status: data.status,
+          startDateTime: new Date(`${data.startDate}T${data.startTime}`),
+          endDateTime: new Date(`${data.endDate}T${data.endTime}`),
+        };
       });
 
       const carList = querySnapshot.docs.map((doc) => {
         const car = doc.data();
-        const booking = bookedCars.find((b) => b.carId === doc.id);
         let carStatus = "Available";
 
-        if (booking) {
-          if (booking.status === "approve") {
-            carStatus = "Booked";
-          } else if (booking.status === "Pending Approval") {
-            carStatus = "Pending";
+        const isCarBooked = bookedCars.some((booking) => {
+          if (booking.carId === doc.id && booking.status === "approve") {
+            const selectedStart = new Date(`${startDate}T${startTime}`);
+            const selectedEnd = new Date(`${endDate}T${endTime}`);
+            return selectedStart < booking.endDateTime && selectedEnd > booking.startDateTime;
           }
+          return false;
+        });
+
+        const isCarPending = bookedCars.some((booking) => {
+           if (booking.carId === doc.id && booking.status === "Pending Approval"){
+              const selectedStart = new Date(`${startDate}T${startTime}`);
+              const selectedEnd = new Date(`${endDate}T${endTime}`);
+              return selectedStart < booking.endDateTime && selectedEnd > booking.startDateTime;
+           }
+           return false;
+        });
+
+        if (isCarBooked) {
+          carStatus = "Booked";
+        } else if (isCarPending){
+          carStatus = "Pending"
         }
 
         return {

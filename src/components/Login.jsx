@@ -47,23 +47,23 @@ const Login = ({ setUser }) => {
       }
 
       if (userData && userData.password === password) {
-        const loggedInUser = { first_name: userData.first_name };
+        const loggedInUser = { ...userData }; // เก็บข้อมูลผู้ใช้ทั้งหมด
         localStorage.setItem('user', JSON.stringify(loggedInUser));
-        setUser(loggedInUser); // อัปเดต Navbar ทันที
-        navigate('/home');
+        setUser(loggedInUser);
+        navigate('/profile'); // เปลี่ยนเส้นทางไปที่ Profile
         return;
       }
 
       if (isAdmin) {
         const loggedInUser = { first_name: 'Admin' };
         localStorage.setItem('user', JSON.stringify(loggedInUser));
-        setUser(loggedInUser); // อัปเดต Navbar ทันที
+        setUser(loggedInUser);
         navigate('/admin');
         return;
       }
 
       setError('รหัสผ่านไม่ถูกต้อง');
-      
+
     } catch (error) {
       setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
       console.error('Login Error:', error);

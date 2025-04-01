@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button } from 'react-bootstrap';
+import { Table, Button, Form } from 'react-bootstrap';
 import { collection, getDocs, deleteDoc, doc, query, where } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 
 const HistorybookingTable = () => {
   const [rentals, setRentals] = useState([]);
+  const [search, setSearch] = useState('');
   const navigate = useNavigate();
 
   const fetchRentals = async () => {
@@ -59,9 +60,25 @@ const HistorybookingTable = () => {
     navigate(`/PaymentForm/${rentalId}`);
   };
 
+  const filteredRentals = rentals.filter(rental =>
+    rental.carModel.toLowerCase().includes(search.toLowerCase()) ||
+    rental.licensePlate.toLowerCase().includes(search.toLowerCase()) ||
+    rental.name.toLowerCase().includes(search.toLowerCase()) ||
+    rental.surname.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="container mt-4">
       <center><h2>ข้อมูลการเช่ารถ</h2></center>
+      <div className="d-flex justify-content-between mb-3">
+        <Form.Control
+          type="text"
+          placeholder="ค้นหา..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ width: '250px' }}
+        />
+      </div>
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -79,8 +96,8 @@ const HistorybookingTable = () => {
           </tr>
         </thead>
         <tbody>
-          {rentals.length > 0 ? (
-            rentals.map((rental) => (
+          {filteredRentals.length > 0 ? (
+            filteredRentals.map((rental) => (
               <tr key={rental.id}>
                 <td>{rental.carModel}</td>
                 <td>{rental.licensePlate}</td>

@@ -48,6 +48,9 @@ const Sidebar = () => {
             <Nav.Link as={NavLink} to="/TableRental" onClick={toggleSidebar}>
               ข้อมูลเช่ารถยนต์
             </Nav.Link>
+            <Nav.Link as={NavLink} to="/revenueTable" onClick={toggleSidebar}>
+              รายงานรายรับ
+            </Nav.Link>
             <Nav.Link onClick={toggleSidebar}>
               Logout
             </Nav.Link>

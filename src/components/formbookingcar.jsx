@@ -75,7 +75,7 @@ const CarRentalForm = () => {
       setEmail("");
 
       // นำทางไปหน้ารายการจองหลังจากสำเร็จ
-      navigate(`/bookings/${carId}`);
+      navigate(`/bookings/${carId}/history`);
 
     } catch (error) {
       console.error("Error saving data: ", error);
