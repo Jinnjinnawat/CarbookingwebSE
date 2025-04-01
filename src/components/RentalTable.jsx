@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Dropdown, DropdownButton } from 'react-bootstrap';
+import { Table, Button, Dropdown, DropdownButton, Form } from 'react-bootstrap';
 import { collection, getDocs, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 
 const RentalTable = () => {
   const [rentals, setRentals] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,7 +18,6 @@ const RentalTable = () => {
           rentalList.push({ id: doc.id, ...doc.data() });
         });
         setRentals(rentalList);
-        console.log("Fetched rentals:", rentalList);
       } catch (error) {
         console.error('Error fetching rentals:', error);
       }
@@ -26,16 +26,11 @@ const RentalTable = () => {
     fetchRentals();
   }, []);
 
-  const handleAdd = () => {
-    navigate('/addrental');
-  };
-
   const handleEditStatus = async (rentalId, newStatus) => {
     try {
       const rentalRef = doc(db, 'bookings', rentalId);
       await updateDoc(rentalRef, { status: newStatus });
 
-      // Update car status as well
       const rentalData = await getDoc(rentalRef);
       const carRef = doc(db, 'cars', rentalData.data().carId);
       await updateDoc(carRef, { status: newStatus });
@@ -55,9 +50,24 @@ const RentalTable = () => {
     }
   };
 
+  const filteredRentals = rentals.filter(rental =>
+    rental.carModel.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    rental.licensePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    rental.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    rental.surname.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="container mt-4">
       <center><h2>ข้อมูลการเช่ารถ</h2></center>
+      <Form className="mb-3">
+        <Form.Control
+          type="text"
+          placeholder="ค้นหาข้อมูลการเช่า..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </Form>
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -75,8 +85,8 @@ const RentalTable = () => {
           </tr>
         </thead>
         <tbody>
-          {rentals.length > 0 ? (
-            rentals.map((rental) => (
+          {filteredRentals.length > 0 ? (
+            filteredRentals.map((rental) => (
               <tr key={rental.id}>
                 <td>{rental.carModel}</td>
                 <td>{rental.licensePlate}</td>
@@ -105,7 +115,6 @@ const RentalTable = () => {
           )}
         </tbody>
       </Table>
-    
     </div>
   );
 };

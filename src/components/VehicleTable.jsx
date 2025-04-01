@@ -1,54 +1,54 @@
-// VehicleTable.jsx
 import React, { useEffect, useState } from 'react';
-import { Table, Button } from 'react-bootstrap';
+import { Table, Button, Form } from 'react-bootstrap';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../firebaseConfig';  // นำเข้า db จาก firebaseConfig
-import { useNavigate } from 'react-router-dom';  // Import useNavigate from react-router-dom
+import { db } from '../firebaseConfig';
+import { useNavigate } from 'react-router-dom';
 
 const VehicleTable = () => {
   const [vehicles, setVehicles] = useState([]);
-  const navigate = useNavigate();  // Hook to handle navigation
+  const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchVehicles = async () => {
       const querySnapshot = await getDocs(collection(db, 'cars'));
-      const vehicleList = [];
-      querySnapshot.forEach((doc) => {
-        vehicleList.push({ id: doc.id, ...doc.data() });
-      });
+      const vehicleList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setVehicles(vehicleList);
     };
-
     fetchVehicles();
   }, []);
 
-  const handleAdd = () => {
-    // Navigate to the /addcar page when the "เพิ่มข้อมูลรถ" button is clicked
-    navigate('/addcar');
-  };
-
-  const handleEdit = (vehicleId) => {
-    // Add the logic for handling edit (e.g., redirect to an edit page or open a modal)
-    console.log('Edit vehicle with id:', vehicleId);
-    // Example: navigate to an edit page (adjust the path as needed)
-    navigate(`/editcar/${vehicleId}`);
-  };
+  const handleAdd = () => navigate('/addcar');
+  const handleEdit = (vehicleId) => navigate(`/editcar/${vehicleId}`);
 
   const handleDelete = async (vehicleId) => {
     try {
       await deleteDoc(doc(db, 'cars', vehicleId));
-      setVehicles(vehicles.filter(vehicle => vehicle.id !== vehicleId));  // Remove the deleted vehicle from the state
+      setVehicles(vehicles.filter(vehicle => vehicle.id !== vehicleId));
     } catch (error) {
       console.error('Error deleting vehicle:', error);
     }
   };
 
+  const filteredVehicles = vehicles.filter(vehicle =>
+    vehicle.brand.toLowerCase().includes(search.toLowerCase()) ||
+    vehicle.license_plate.toLowerCase().includes(search.toLowerCase()) ||
+    vehicle.model.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="container mt-4">
       <center><h2>รถยนต์</h2></center>
-      <Button variant="success" onClick={handleAdd} className="me-2">
-        เพิ่มข้อมูลรถ
-      </Button>
+      <div className="d-flex justify-content-between mb-3">
+        <Button variant="success" onClick={handleAdd}>เพิ่มข้อมูลรถ</Button>
+        <Form.Control
+          type="text"
+          placeholder="ค้นหา..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ width: '250px' }}
+        />
+      </div>
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -62,7 +62,7 @@ const VehicleTable = () => {
           </tr>
         </thead>
         <tbody>
-          {vehicles.map((vehicle) => (
+          {filteredVehicles.map((vehicle) => (
             <tr key={vehicle.id}>
               <td>{vehicle.brand}</td>
               <td>{vehicle.license_plate}</td>
@@ -70,14 +70,10 @@ const VehicleTable = () => {
               <td>{vehicle.price_per_day}</td>
               <td>{vehicle.status}</td>
               <td>
-                <Button variant="warning" onClick={() => handleEdit(vehicle.id)} className="me-2">
-                  Edit
-                </Button>
+                <Button variant="warning" onClick={() => handleEdit(vehicle.id)}>Edit</Button>
               </td>
               <td>
-                <Button variant="danger" onClick={() => handleDelete(vehicle.id)}>
-                  Delete
-                </Button>
+                <Button variant="danger" onClick={() => handleDelete(vehicle.id)}>Delete</Button>
               </td>
             </tr>
           ))}
