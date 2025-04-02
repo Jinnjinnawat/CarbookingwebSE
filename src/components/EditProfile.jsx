@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Form, Button, Spinner } from "react-bootstrap";
+import { Container, Form, Button, Spinner, Card, Row, Col } from "react-bootstrap";
 import { db } from '../firebaseConfig';
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ const EditProfile = () => {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [licenseNo, setLicenseNo] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +29,7 @@ const EditProfile = () => {
             setLastName(customerData.last_name);
             setPhone(customerData.phone);
             setAddress(customerData.address);
+            setLicenseNo(customerData.license_no);
           } else {
             console.log("No customer found with that email.");
           }
@@ -58,6 +60,7 @@ const EditProfile = () => {
           last_name: lastName,
           phone: phone,
           address: address,
+          license_no: licenseNo,
         });
         alert('แก้ไขข้อมูลสำเร็จ');
         navigate('/profile');
@@ -85,26 +88,46 @@ const EditProfile = () => {
 
   return (
     <Container className="mt-5">
-      <h2>แก้ไขข้อมูลผู้ใช้</h2>
-      <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="firstName">
-          <Form.Label>ชื่อ</Form.Label>
-          <Form.Control type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-        </Form.Group>
-        <Form.Group controlId="lastName">
-          <Form.Label>นามสกุล</Form.Label>
-          <Form.Control type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-        </Form.Group>
-        <Form.Group controlId="phone">
-          <Form.Label>เบอร์โทร</Form.Label>
-          <Form.Control type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        </Form.Group>
-        <Form.Group controlId="address">
-          <Form.Label>ที่อยู่</Form.Label>
-          <Form.Control as="textarea" rows={3} value={address} onChange={(e) => setAddress(e.target.value)} />
-        </Form.Group>
-        <Button variant="primary" type="submit">บันทึกการแก้ไข</Button>
-      </Form>
+      <Card>
+        <Card.Header>แก้ไขข้อมูลผู้ใช้</Card.Header>
+        <Card.Body>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group as={Row} className="mb-3" controlId="firstName">
+              <Form.Label column sm="3">ชื่อ</Form.Label>
+              <Col sm="9">
+                <Form.Control type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+              </Col>
+            </Form.Group>
+            <Form.Group as={Row} className="mb-3" controlId="lastName">
+              <Form.Label column sm="3">นามสกุล</Form.Label>
+              <Col sm="9">
+                <Form.Control type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+              </Col>
+            </Form.Group>
+            <Form.Group as={Row} className="mb-3" controlId="phone">
+              <Form.Label column sm="3">เบอร์โทร</Form.Label>
+              <Col sm="9">
+                <Form.Control type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              </Col>
+            </Form.Group>
+            <Form.Group as={Row} className="mb-3" controlId="address">
+              <Form.Label column sm="3">ที่อยู่</Form.Label>
+              <Col sm="9">
+                <Form.Control as="textarea" rows={3} value={address} onChange={(e) => setAddress(e.target.value)} />
+              </Col>
+            </Form.Group>
+            <Form.Group as={Row} className="mb-3" controlId="licenseNo">
+              <Form.Label column sm="3">เลขใบขับขี่</Form.Label>
+              <Col sm="9">
+                <Form.Control type="text" value={licenseNo} onChange={(e) => setLicenseNo(e.target.value)} />
+              </Col>
+            </Form.Group>
+            <div className="text-center">
+                <Button variant="primary" type="submit">บันทึกการแก้ไข</Button>
+            </div>
+          </Form>
+        </Card.Body>
+      </Card>
     </Container>
   );
 };

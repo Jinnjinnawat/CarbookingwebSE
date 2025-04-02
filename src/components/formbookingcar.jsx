@@ -15,9 +15,9 @@ const CarRentalForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { 
-    carId, startDate, startTime, endDate, endTime, 
-    licensePlate, carModel, pricePerDay: carPricePerDay 
+  const {
+    carId, startDate, startTime, endDate, endTime,
+    licensePlate, carModel, pricePerDay: carPricePerDay
   } = location.state || {};
 
   useEffect(() => {
@@ -41,7 +41,7 @@ const CarRentalForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!name || !surname || !phone || !email) {
       alert("กรุณากรอกข้อมูลให้ครบถ้วน");
       return;
@@ -49,7 +49,7 @@ const CarRentalForm = () => {
 
     try {
       await addDoc(collection(db, "bookings"), {
-        carId, 
+        carId,
         name,
         surname,
         phone,
@@ -62,7 +62,7 @@ const CarRentalForm = () => {
         carModel,
         totalCost,
         pricePerDay,
-        status: "Pending Approval", 
+        status: "Pending Approval",
         createdAt: new Date(),
       });
 
@@ -75,7 +75,7 @@ const CarRentalForm = () => {
       setEmail("");
 
       // นำทางไปหน้ารายการจองหลังจากสำเร็จ
-      navigate(`/bookings/${carId}/history`);
+      navigate(`/history`);
 
     } catch (error) {
       console.error("Error saving data: ", error);
@@ -126,7 +126,7 @@ const CarRentalForm = () => {
                   <Form.Control type="text" value={totalCost ? `${totalCost} THB` : "No Data"} readOnly />
                 </Form.Group>
 
-                <Button variant="primary" type="submit" className="w-100">Submit</Button>
+                <Button variant="primary" type="submit" className="w-100">เช่ารถ</Button>
               </Form>
             </Card.Body>
           </Card>

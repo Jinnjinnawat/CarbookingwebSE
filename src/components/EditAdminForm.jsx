@@ -46,7 +46,7 @@ const EditAdminForm = () => {
       alert("แก้ไขข้อมูลแอดมินสำเร็จ!");
 
       // After successfully editing, navigate to the admin table page
-      navigate('/AdminTable');
+      navigate('/TableAdmin');
     } catch (error) {
       console.error("Error updating document: ", error);
       alert("เกิดข้อผิดพลาดในการแก้ไขข้อมูล");

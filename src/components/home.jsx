@@ -2,15 +2,17 @@ import React, { useEffect, useState } from "react";
 import { db } from "../firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { Form, Button, Card, Badge, Container, Row, Col, Spinner } from "react-bootstrap";
+import { Form, Button, Card, Badge, Container, Row, Col, Spinner, Dropdown } from "react-bootstrap";
 
 function GroupExample() {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState("");
-  const [startTime, setStartTime] = useState("");
+  const [startTime, setStartTime] = useState("08:00");
   const [endDate, setEndDate] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [endTime, setEndTime] = useState("20:00");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState(""); // เปลี่ยนจาก model เป็น brand
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,18 +51,18 @@ function GroupExample() {
         });
 
         const isCarPending = bookedCars.some((booking) => {
-           if (booking.carId === doc.id && booking.status === "Pending Approval"){
-              const selectedStart = new Date(`${startDate}T${startTime}`);
-              const selectedEnd = new Date(`${endDate}T${endTime}`);
-              return selectedStart < booking.endDateTime && selectedEnd > booking.startDateTime;
-           }
-           return false;
+          if (booking.carId === doc.id && booking.status === "Pending Approval") {
+            const selectedStart = new Date(`${startDate}T${startTime}`);
+            const selectedEnd = new Date(`${endDate}T${endTime}`);
+            return selectedStart < booking.endDateTime && selectedEnd > booking.startDateTime;
+          }
+          return false;
         });
 
         if (isCarBooked) {
           carStatus = "Booked";
-        } else if (isCarPending){
-          carStatus = "Pending"
+        } else if (isCarPending) {
+          carStatus = "Pending";
         }
 
         return {
@@ -120,76 +122,115 @@ function GroupExample() {
     });
   };
 
+  const filteredCars = cars.filter((car) =>
+      (searchQuery ? car.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          car.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          car.license_plate.toLowerCase().includes(searchQuery.toLowerCase()) : true) &&
+      (selectedBrand ? car.brand === selectedBrand : true) // เปลี่ยนจาก model เป็น brand
+  );
+
+  const uniqueBrands = [...new Set(cars.map((car) => car.brand))]; // เปลี่ยนจาก model เป็น brand
+
   return (
-    <Container>
-      <h3 className="mb-4 text-center">เช่ารถ</h3>
-      <Form>
-        <Row className="mb-4">
-          <Col md={6}>
-            <Form.Label>วันที่เริ่มเช่า</Form.Label>
-            <Form.Control type="date" value={startDate} onChange={handleStartDateChange} />
-          </Col>
-          <Col md={6}>
-            <Form.Label>เวลาเริ่มเช่า</Form.Label>
-            <Form.Control type="time" value={startTime} onChange={handleStartTimeChange} />
-          </Col>
-        </Row>
-        <Row className="mb-4">
-          <Col md={6}>
-            <Form.Label>วันที่คืนรถ</Form.Label>
-            <Form.Control type="date" value={endDate} onChange={handleEndDateChange} />
-          </Col>
-          <Col md={6}>
-            <Form.Label>เวลาคืนรถ</Form.Label>
-            <Form.Control type="time" value={endTime} onChange={handleEndTimeChange} />
-          </Col>
-        </Row>
-      </Form>
-      {loading ? (
-        <div className="text-center my-4">
-          <Spinner animation="border" />
-        </div>
-      ) : (
-        <Row>
-          {cars.length > 0 ? (
-            cars.map((car) => (
-              <Col key={car.id} md={4} className="d-flex">
-                <Card style={{ width: "100%", marginBottom: "1rem" }}>
-                  <Card.Img variant="top" src={car.img_car || "https://via.placeholder.com/150"} style={{ height: "200px", objectFit: "cover" }} />
-                  <Card.Body>
-                    <Card.Title>{car.brand} {car.model}</Card.Title>
-                    <Card.Text>
-                      <strong>ทะเบียน:</strong> {car.license_plate} <br />
-                      <strong>ราคา:</strong> {car.price_per_day} บาท/วัน
-                    </Card.Text>
-                    <Button 
-                      variant="primary" 
-                      onClick={() => handleBookCar(car.id, car.model, car.license_plate, car.price_per_day)}
-                      className="w-100"
-                      disabled={car.status === "Booked" || car.status === "Pending"}
+      <Container>
+        <h3 className="mb-4 text-center">เช่ารถ</h3>
+        <Form>
+          <Row className="mb-4">
+            <Col md={6}>
+              <Form.Label>วันที่เริ่มเช่า</Form.Label>
+              <Form.Control type="date" value={startDate} onChange={handleStartDateChange} />
+            </Col>
+            <Col md={6}>
+              <Form.Label>เวลาเริ่มเช่า (8:00 - 20:00)</Form.Label>
+              <Form.Control type="time" value={startTime} onChange={handleStartTimeChange} min="08:00" max="20:00" />
+            </Col>
+          </Row>
+          <Row className="mb-4">
+            <Col md={6}>
+              <Form.Label>วันที่คืนรถ</Form.Label>
+              <Form.Control type="date" value={endDate} onChange={handleEndDateChange} />
+            </Col>
+            <Col md={6}>
+              <Form.Label>เวลาคืนรถ (8:00 - 20:00)</Form.Label>
+              <Form.Control type="time" value={endTime} onChange={handleEndTimeChange} min="08:00" max="20:00" />
+            </Col>
+          </Row>
+          {(startDate && endDate && startTime && endTime) && (
+              <Row className="mb-4">
+                <Col md={6}>
+                  <Form.Control
+                      type="text"
+                      placeholder="ค้นหารถ (ยี่ห้อ, รุ่น, ทะเบียน)"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </Col>
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>ยี่ห้อรถ</Form.Label>
+                    <Form.Control
+                        as="select"
+                        value={selectedBrand} // เปลี่ยนจาก model เป็น brand
+                        onChange={(e) => setSelectedBrand(e.target.value)} // เปลี่ยนจาก model เป็น brand
                     >
-                      {car.status === "Booked" ? "รถถูกจองแล้ว" : car.status === "Pending" ? "รอดำเนินการ" : "เช่ารถ"}
-                    </Button>
-                  </Card.Body>
-                  <Card.Footer>
-                    <small className="text-muted">
-                      <strong>สถานะ:</strong>
-                      <Badge pill bg={car.status === "Available" ? "success" : car.status === "Booked" ? "danger" : "warning"} className="ms-2">
-                        {car.status === "Booked" ? "ถูกจองแล้ว" : car.status === "Pending" ? "รอดำเนินการ" : "ว่าง"}
-                      </Badge>
-                    </small>
-                  </Card.Footer>
-                </Card>
-              </Col>
-            ))
-          ) : (
-            <div className="text-center w-100">
-              <h5>ไม่พบรถที่สามารถจองได้ในช่วงเวลานี้</h5>
-            </div>
+                      <option value="">ทั้งหมด</option>
+                      {uniqueBrands.map((brand) => ( // เปลี่ยนจาก model เป็น brand
+                          <option key={brand} value={brand}>
+                            {brand}
+                          </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+                </Col>
+              </Row>
           )}
-        </Row>
-      )}
-    </Container>
+        </Form>
+
+        {loading ? (
+            <div className="text-center my-4">
+              <Spinner animation="border" />
+            </div>
+        ) : (
+            <Row>
+              {filteredCars.length > 0 ? (
+                  filteredCars.map((car) => (
+                      <Col key={car.id} md={4} className="d-flex">
+                        <Card style={{ width: "100%", marginBottom: "1rem" }}>
+                          <Card.Img variant="top" src={car.img_car || "https://via.placeholder.com/150"} style={{ height: "200px", objectFit: "cover" }} />
+                          <Card.Body>
+                            <Card.Title>{car.brand} {car.model}</Card.Title>
+                            <Card.Text>
+                              <strong>ทะเบียน:</strong> {car.license_plate} <br />
+                              <strong>ราคา:</strong> {car.price_per_day} บาท/วัน
+                            </Card.Text>
+                            <Button
+                                variant="primary"
+                                onClick={() => handleBookCar(car.id, car.model, car.license_plate, car.price_per_day)}
+                                className="w-100"
+                                disabled={car.status === "Booked" || car.status === "Pending"}
+                            >
+                              {car.status === "Booked" ? "รถถูกเช่าแล้ว" : car.status === "Pending" ? "รอดำเนินการ" : "เช่ารถ"}
+                            </Button>
+                          </Card.Body>
+                          <Card.Footer>
+                            <small className="text-muted">
+                              <strong>สถานะ:</strong>
+                              <Badge pill bg={car.status === "Available" ? "success" : car.status === "Booked" ? "danger" : "warning"} className="ms-2">
+                                {car.status === "Booked" ? "รถถูกเช่าแล้ว" : car.status === "Pending" ? "รอดำเนินการ" : "ว่าง"}
+                              </Badge>
+                            </small>
+                          </Card.Footer>
+                        </Card>
+                      </Col>
+                  ))
+              ) : (
+                  <div className="text-center w-100">
+                    <h5>ไม่พบรถที่สามารถจองได้ในช่วงเวลานี้</h5>
+                  </div>
+              )}
+            </Row>
+        )}
+      </Container>
   );
 }
 

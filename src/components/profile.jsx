@@ -63,6 +63,9 @@ const Profile = () => {
             <Col><strong>Address:</strong> {customer.address}</Col>
           </Row>
           <Row className="mt-3">
+            <Col><strong>License No:</strong> {customer.license_no}</Col>
+          </Row>
+          <Row className="mt-3">
             <Col className="text-center">
               <Link to="/edit-profile">
                 <Button variant="primary">แก้ไขข้อมูล</Button>
